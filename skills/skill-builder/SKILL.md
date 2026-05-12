@@ -339,10 +339,11 @@ Set `allow_implicit_invocation: true` only for reference skills (auto-applicable
 #!/bin/bash
 set -e
 SKILL="{SKILL_NAME}"
-SKILL_SRC="$(cd "$(dirname "$0")/skills/$SKILL" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILL_SRC="$SCRIPT_DIR/skills/$SKILL"
 
 install_to() {
-  local dest="$1/$SKILL"
+  local dest="${1}/$SKILL"
   mkdir -p "$dest"
   cp -r "$SKILL_SRC/." "$dest/"
   echo "  ✓ $dest"
