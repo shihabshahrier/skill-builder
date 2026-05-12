@@ -80,17 +80,34 @@ cp -r skills/skill-builder/. ~/.gemini/antigravity/skills/skill-builder/
 
 ## Usage
 
+### Build a new skill
+
 ```
 /skill-builder "description"
 /skill-builder "description" --type workflow|mode|tool|reference|agent
 /skill-builder "description" --type workflow --repo
 ```
 
+### Audit an existing skill
+
+```
+/skill-builder --audit skills/my-skill/SKILL.md
+/skill-builder --audit skills/my-skill/SKILL.md --fix
+```
+
+`--audit` runs the full quality checklist against any SKILL.md — checks frontmatter spec compliance, body structure, size budget, reference quality, placeholder substitution, and more. Reports every failure with exact fix instructions.
+
+`--fix` goes further: outputs a corrected SKILL.md with all failures resolved. Sections that pass are left untouched.
+
+### All flags
+
 | Arg | Default | Values |
 |-----|---------|--------|
-| description | required | plain English, what the skill does |
+| description | required (unless --audit) | plain English, what the skill does |
 | --type | auto-detected | workflow, mode, tool, reference, agent |
 | --repo | off | scaffold full marketplace-ready repo |
+| --audit | off | path to existing SKILL.md to audit |
+| --fix | off | with --audit: also output corrected SKILL.md |
 
 **Without `--repo`**: generates `skills/{name}/SKILL.md` + references only.
 **With `--repo`**: generates a complete publish-ready repo with all agent rules, install script, README, LICENSE, CI boilerplate.
@@ -130,25 +147,39 @@ cp -r skills/skill-builder/. ~/.gemini/antigravity/skills/skill-builder/
 
 ## How it works
 
-6-phase pipeline:
+### Create path (8 phases)
 
 ```
-Phase 0: Classify skill type (auto or from --type flag)
-Phase 1: Gather requirements (≤3 questions total)
-Phase 2: Generate SKILL.md (correct frontmatter + body for type)
-Phase 3: Generate references/ (domain knowledge, lazily loaded)
-Phase 4: Generate hooks/ (mode skills only — SessionStart + UserPromptSubmit)
-Phase 5: Scaffold full repo (--repo flag only)
-Phase 6: Report + install commands
+Phase 0:   Route — detect --audit flag; branch to audit path if present
+Phase 1:   Classify skill type (auto or from --type flag)
+Phase 2:   Gather requirements (≤3 questions total)
+Phase 1.5: Domain research — WebSearch official docs for every tool/API
+           the skill references; verified facts only, no guessing
+Phase 3:   Generate SKILL.md (correct frontmatter + body for type)
+Phase 4:   Generate references/ (populated from research, lazily loaded)
+Phase 5:   Generate hooks/ (mode skills only — SessionStart + UserPromptSubmit)
+Phase 6:   Scaffold full repo (--repo flag only)
+Phase 7:   Report + install commands
 ```
 
-Knows:
-- All Agent Skills open standard frontmatter fields (`name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`)
-- Claude Code / opencode-specific fields (`user-invocable`, `disable-model-invocation`)
+### Audit path (Phase A)
+
+```
+Step 1: Read SKILL.md at given path
+Step 2: Run full quality checklist (spec, body, references, size budget)
+Step 3: Output audit report — [FAIL] / [WARN] / passed count
+Step 4: If --fix — output corrected SKILL.md (failures only, passing sections unchanged)
+```
+
+### Knows
+
+- All Agent Skills open standard frontmatter: `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`
+- Full Claude Code / opencode extended fields: `user-invocable`, `disable-model-invocation`, `argument-hint`, `when_to_use`, `model`, `effort`, `context`, `agent`, `paths`, `shell`, `hooks`
 - Codex `agents/openai.yaml` format
 - All 5 agent discovery paths + `install.sh` template
 - Hook patterns for mode skills (safeWriteFlag, silent-fail, per-turn reinforcement)
 - All agent rule file formats (Cursor `.mdc`, Windsurf `.md`, Cline, Codex, Copilot)
+- Progressive disclosure model: SKILL.md ≤5000 tokens, references on-demand, TOC for large files
 
 ---
 
