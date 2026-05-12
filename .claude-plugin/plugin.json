@@ -1,0 +1,8 @@
+{
+  "name": "skill-builder",
+  "description": "Build any AI agent skill from a plain-English description. Generates SKILL.md, references, hooks, and full marketplace repo scaffold.",
+  "author": {
+    "name": "Shahriar",
+    "url": "https://github.com/shihabshahrier"
+  }
+}

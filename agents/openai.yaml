@@ -1,0 +1,5 @@
+interface:
+  display_name: "Skill Builder"
+  short_description: "Build any AI agent skill from a plain-English description."
+policy:
+  allow_implicit_invocation: false

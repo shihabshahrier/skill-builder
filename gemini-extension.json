@@ -1,0 +1,6 @@
+{
+  "name": "skill-builder",
+  "description": "Build any AI agent skill from a plain-English description. Supports all Agent Skills open standard tools.",
+  "version": "1.0.0",
+  "contextFileName": "GEMINI.md"
+}

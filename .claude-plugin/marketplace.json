@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "skill-builder",
+  "description": "Build any AI agent skill from a plain-English description. Supports all 32+ Agent Skills open standard tools.",
+  "owner": {
+    "name": "Shahriar",
+    "url": "https://github.com/shihabshahrier"
+  },
+  "plugins": [
+    {
+      "name": "skill-builder",
+      "description": "Describe a skill in plain English. Get a production-ready SKILL.md for every agent.",
+      "source": "./",
+      "category": "developer-tools"
+    }
+  ]
+}
