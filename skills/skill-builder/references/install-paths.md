@@ -5,6 +5,18 @@ any config changes. Based on Agent Skills open standard (December 2025).
 
 ---
 
+## Table of Contents
+
+- [Global Paths](#global-paths-user-level-available-in-all-projects)
+- [Project Paths](#project-paths-repo-level-scoped-to-project)
+- [Path Resolution Order (opencode)](#path-resolution-order-opencode)
+- [install.sh Template](#installsh-template)
+- [Manual Install (per agent)](#manual-install-per-agent)
+- [Verification](#verification-claude-code)
+- [Agent-Specific Notes](#agent-specific-notes)
+
+---
+
 ## Global Paths (user-level, available in all projects)
 
 | Agent | Global install path |

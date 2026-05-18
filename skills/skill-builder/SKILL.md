@@ -1,17 +1,27 @@
 ---
 name: skill-builder
 description: >
-  Build any AI agent skill from a plain-English description. Generates SKILL.md,
-  references, hooks, and full marketplace repo scaffold. Supports all 32+ agents
-  in the Agent Skills open standard: Claude Code, Codex, opencode, Cursor,
-  Windsurf, Gemini CLI, OpenClaw, Cline, Copilot, and more.
-  Invoke: /skill-builder "what the skill should do" [--type workflow|mode|tool|reference|agent] [--repo]
-  Audit existing skill: /skill-builder --audit path/to/SKILL.md [--fix]
+  Build or audit any AI agent skill from a plain-English description.
+  Generates SKILL.md, references, hooks, and full marketplace repo scaffold.
+  Supports all 32+ agents in the Agent Skills open standard.
+license: MIT
 user-invocable: true
 argument-hint: '"description" [--type workflow|mode|tool|reference|agent] [--repo] [--audit path] [--fix]'
 when_to_use: >
   Use when user says build a skill, create a skill, make a skill, generate a skill,
   audit a skill, review a skill, fix a skill, improve a skill, /skill-builder.
+allowed-tools:
+  - bash
+  - read
+  - write
+  - glob
+  - grep
+  - web-search
+  - web-fetch
+  - agent
+metadata:
+  author: "shihabshahrier"
+  category: "developer-tools"
 ---
 
 # Skill Builder
@@ -46,7 +56,11 @@ agent that implements the Agent Skills open standard (32+ tools, December 2025).
 
 **If `--audit` flag present:** skip to [Phase A — Audit](#phase-a--audit).
 
-**Otherwise:** continue to classify.
+**Otherwise:** continue to Phase 1.
+
+---
+
+## Phase 1 — Classify
 
 Load `references/skill-types.md`.
 
@@ -68,11 +82,11 @@ Wait for answer. Never ask more than one question total. Decide the rest.
 
 ---
 
-## Phase 1 — Gather Requirements
+## Phase 2 — Gather Requirements
 
 Load `references/skill-anatomy.md`.
 
-Ask at most 2 more questions total (across Phase 0 + Phase 1). If the description already answers these, skip them entirely:
+Ask at most 2 more questions total (across all phases). If description already answers, skip:
 
 ```
 1. Trigger: does the user type /skill-name to invoke, or should it activate automatically?
@@ -80,333 +94,115 @@ Ask at most 2 more questions total (across Phase 0 + Phase 1). If the descriptio
 ```
 
 Derive:
-- `SKILL_NAME` — kebab-case, lowercase alphanumeric + hyphens, 1–64 chars, matches `^[a-z0-9]+(-[a-z0-9]+)*$`
+- `SKILL_NAME` — kebab-case, matches `^[a-z0-9]+(-[a-z0-9]+)*$`, 1–64 chars
 - `TRIGGER` — user-invocable (typed) or auto (always-on, requires SessionStart hook)
 - `OUTPUTS` — files / behavior change / report / none
 - `NEEDS_HOOKS` — true if mode or auto-trigger
 - `NEEDS_REFERENCES` — true if skill needs domain knowledge loaded lazily
 - `NEEDS_SCRIPTS` — true if skill runs bash/python tools
-- `NEEDS_OPENAI_YAML` — true if Codex-specific display config needed
 
 ---
 
-## Phase 1.5 — Domain Research (if NEEDS_REFERENCES)
+## Phase 3 — Domain Research (if NEEDS_REFERENCES)
 
 Before writing any reference files, research the domain to get verified facts.
-Skip this phase only if `NEEDS_REFERENCES` is false.
+Skip this phase if `NEEDS_REFERENCES` is false.
 
-**Step 1 — Identify research targets**
+**Step 1 — Identify research targets.** From description, extract tool/library names, APIs, frameworks, flags, method signatures, config schemas.
 
-From the skill description, extract:
-- Tool/library names (e.g. `imagemagick`, `sharp`, `ffmpeg`, `eslint`)
-- APIs or services (e.g. GitHub Actions, Stripe, OpenAI)
-- Language/framework specifics (e.g. Rust borrow checker rules, React hooks constraints)
-- Any flags, method signatures, or config schemas the skill will reference
-
-**Step 2 — WebSearch for official docs**
-
-For each research target, run a targeted search:
+**Step 2 — WebSearch official docs.** For each target:
 ```
 WebSearch: "{tool-name} official documentation CLI flags"
 WebSearch: "{api-name} API reference {relevant-endpoint}"
-WebSearch: "{framework} best practices {specific-topic}"
 ```
+Prioritize: official docs > spec documents > recent release notes.
 
-Prioritize:
-1. Official docs (docs.tool.io, man pages, GitHub README of the project itself)
-2. Spec documents (RFCs, WHATWG, OpenAPI schemas)
-3. Recent release notes for version-specific behavior
+**Step 3 — Extract and verify.** Only keep: exact flag names + values, method signatures, error codes, version constraints. Never include unverified Stack Overflow answers.
 
-**Step 3 — Extract and verify**
-
-From search results, extract only:
-- Exact flag names and their accepted values
-- Method/function signatures with correct parameter names
-- Error codes and their meaning
-- Version compatibility constraints
-
-**Never include:**
-- Anything not confirmed in official sources
-- Stack Overflow answers without cross-referencing docs
-- Behavior that might have changed since a major version bump
-
-**Step 4 — Build reference stubs**
-
-For each domain area, create a reference stub:
-```
-references/{domain-slug}.md
-  - verified flags / methods / config keys
-  - error→fix table for common failures
-  - input/output example pairs
-  - TOC at top if >100 lines
-```
-
-These stubs feed directly into Phase 3.
+**Step 4 — Build reference stubs.** One file per domain: `references/{domain-slug}.md` with verified flags/methods, error→fix table, input/output examples, TOC if >100 lines.
 
 ---
 
-## Phase 2 — Generate SKILL.md
+## Phase 4 — Generate SKILL.md
 
-Load `references/skill-anatomy.md` (already loaded).
-
-### Universal Frontmatter
+### Frontmatter
 
 ```yaml
 ---
 name: {SKILL_NAME}
 description: >
-  {Line 1: what it does — verb + object, ≤80 chars}
-  {Line 2: how invoked}
-  {Line 3: key output or behavior}
-  {Line 4: compatibility note if relevant}
+  {LINE_1_WHAT_IT_DOES_VERB_OBJECT_MAX_80_CHARS}
+  {LINE_2_HOW_INVOKED}
+  {LINE_3_KEY_OUTPUT_OR_BEHAVIOR}
 license: MIT
+user-invocable: {true_OR_false}
+argument-hint: '{ARGUMENT_HINT}'
+when_to_use: >
+  {WHEN_TO_USE}
 ---
 ```
 
-**Claude Code / opencode only — add after `license`:**
-```yaml
-user-invocable: true                    # user types /skill-name
-disable-model-invocation: true          # auto-only, no explicit invoke
-argument-hint: '"{description}" [--type workflow|mode|tool|reference|agent] [--repo] [--audit path]'
-when_to_use: >
-  Use when user says build a skill, create a skill, make a skill, audit a skill.
-# Optional — add only when relevant:
-model: sonnet                           # override model for this skill
-effort: high                            # low|medium|high|xhigh|max
-context: fork                           # run in isolated subagent
-```
-
-`argument-hint` improves autocomplete UX. `when_to_use` extends trigger matching beyond `description`.
-These fields are ignored by Codex, Cursor, Gemini CLI etc. — safe to include, they skip unknown fields.
+Add optional fields only when relevant: `model`, `effort`, `context`, `paths`, `allowed-tools`, `metadata`.
+See `references/skill-anatomy.md` for full field reference.
 
 ### Body structure by skill type
 
-Load `references/skill-types.md` for full patterns. Quick summary:
+Load `references/skill-types.md` for full patterns:
 
-**workflow**: Invocation table → Phase 0 (parse+scaffold) → Phase 1…N (work) → Phase N+1 (report) → Token Efficiency Rules → Open-Weight Model Rules
-
-**mode**: Activation → Persistence → Rules → Intensity Levels → Auto-Clarity → Boundaries
-
-**tool**: Trigger → Process (numbered steps) → Output → Error Handling
-
-**reference**: Purpose → When to Apply → {Domain Sections} → Never Do
-
-**agent**: Prime Directive → Mode Detection table → Phase 0…N → Prohibited Actions → Success Criteria
+- **workflow**: Invocation → Phase 0…N → Report → Token Efficiency → Open-Weight Rules
+- **mode**: Activation → Persistence → Rules → Intensity → Auto-Clarity → Boundaries
+- **tool**: Trigger → Process (numbered) → Output → Error Handling
+- **reference**: Purpose → When to Apply → {Domains} → Never Do
+- **agent**: Prime Directive → Mode Detection → Phases → Prohibited → Success Criteria
 
 ### Quality rules
-- First sentence: action-oriented ("Produce X", "Transform Y"), not "This skill..."
+- First sentence: action-oriented ("Produce X"), not "This skill..."
 - Every section actionable — no vague guidance
-- Code templates for any code the skill generates
-- Error tables for any external tool calls
-- Reference load instructions appear at the phase that needs them (lazy, not upfront)
-- All `{TEMPLATE_VARIABLES}` substituted before outputting — never leave placeholders
+- Code templates for any generated code
+- Error tables for external tool calls
+- Reference loads at the phase that needs them (lazy)
+- All `{TEMPLATE_VARIABLES}` substituted — never leave placeholders
+- Keep SKILL.md under 5000 tokens
 
 ---
 
-## Phase 3 — Generate References (if NEEDS_REFERENCES)
+## Phase 5 — Generate References (if NEEDS_REFERENCES)
 
-For each domain knowledge area:
+For each domain area identified in Phase 3:
 
-1. Identify what facts/rules can't live in SKILL.md without bloating it
-2. Name: `references/{domain-slug}.md`
-3. Structure: headings → tables → code blocks, minimal prose
-4. Error→fix tables for any external tool reference
-5. Add load instruction in SKILL.md at the phase that needs it: `Load references/{name}.md before {action}.`
+1. Name: `references/{domain-slug}.md`
+2. Structure: TOC → headings → tables → code blocks, minimal prose
+3. Error→fix tables for external tools
+4. Input/output example pairs
+5. Add load instruction in SKILL.md: `Load references/{name}.md before {action}.`
 
-Reference rules:
-- Verified facts only — never guess API names, flags, or method signatures
-- Tables over prose
-- Dense, not padded
+Rules: verified facts only, tables over prose, one-level-deep (no chained includes), TOC if >100 lines.
 
 ---
 
-## Phase 4 — Generate Hooks (if NEEDS_HOOKS)
+## Phase 6 — Generate Hooks (if NEEDS_HOOKS)
 
-Load `references/agent-rules.md` for full hook templates.
+Load `references/hook-templates.md` for full templates.
 
-Mode skills only. Two JS files in `hooks/` + `package.json`:
-
-**`hooks/package.json`** — pins CommonJS (required):
-```json
-{"type": "commonjs"}
-```
-
-**`hooks/activate.js`** (SessionStart) — three responsibilities:
-1. Write mode flag to `$CLAUDE_CONFIG_DIR/.{skill-name}-active` via safeWriteFlag
-2. Emit SKILL.md content to stdout (Claude Code injects as system context)
-3. Nudge user about statusline if not configured
-
-**`hooks/tracker.js`** (UserPromptSubmit) — three responsibilities:
-1. Parse prompt from stdin JSON
-2. Deactivate: if prompt matches "stop {skill}" or "/{skill} off" → delete flag
-3. Activate: if prompt matches "/{skill}" → write flag; emit `hookSpecificOutput` reminder
-
-**safeWriteFlag pattern** — atomic, 0600 perms, symlink-safe, silent-fail:
-```javascript
-function safeWriteFlag(flagPath, content) {
-  try {
-    const tmp = flagPath + '.tmp.' + process.pid;
-    require('fs').writeFileSync(tmp, content, { mode: 0o600, flag: 'wx' });
-    require('fs').renameSync(tmp, flagPath);
-  } catch {}
-}
-```
-
-Critical: ALL hook filesystem ops must silent-fail. Hook crash = blocked Claude Code session.
-
-Hook `plugin.json`:
-```json
-{
-  "name": "{SKILL_NAME}",
-  "description": "{description}",
-  "author": {"name": "{author}", "url": "{url}"},
-  "hooks": {
-    "SessionStart": [{"hooks": [{"type": "command",
-      "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/activate.js\"",
-      "timeout": 5, "statusMessage": "Loading {SKILL_NAME}..."}]}],
-    "UserPromptSubmit": [{"hooks": [{"type": "command",
-      "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/tracker.js\"",
-      "timeout": 5}]}]
-  }
-}
-```
+Mode skills only. Generate: `hooks/package.json`, `hooks/activate.js`, `hooks/tracker.js`.
+Use `safeWriteFlag` pattern verbatim. ALL filesystem ops must silent-fail.
 
 ---
 
-## Phase 5 — Scaffold Repo (if --repo)
+## Phase 7 — Scaffold Repo (if --repo)
 
-Load `references/agent-rules.md` and `references/install-paths.md`.
+Load `references/scaffold-templates.md`, `references/agent-rules.md`, and `references/install-paths.md`.
 
-Create full repo structure in a new directory `{SKILL_NAME}/`:
-
-```
-{SKILL_NAME}/
-  skills/
-    {SKILL_NAME}/
-      SKILL.md
-      references/         ← if NEEDS_REFERENCES
-        {domain}.md
-  hooks/                  ← if NEEDS_HOOKS
-    activate.js
-    tracker.js
-    package.json
-  agents/
-    openai.yaml           ← Codex display config
-  .claude-plugin/
-    plugin.json
-    marketplace.json
-  .cursor/
-    rules/{SKILL_NAME}.mdc
-  .windsurf/
-    rules/{SKILL_NAME}.md
-  .clinerules/
-    {SKILL_NAME}.md
-  .codex/
-    config.toml
-    hooks.json
-  .github/
-    FUNDING.yml
-    ISSUE_TEMPLATE/
-      bug_report.md
-      feature_request.md
-    copilot-instructions.md
-  .gitattributes
-  .gitignore
-  AGENTS.md
-  CLAUDE.md
-  CONTRIBUTING.md
-  GEMINI.md
-  gemini-extension.json
-  install.sh
-  LICENSE
-  README.md
-```
-
-### Required file contents
-
-**`agents/openai.yaml`** — Codex display + behavior config:
-```yaml
-interface:
-  display_name: "{Skill Display Name}"
-  short_description: "{one punchy sentence}"
-policy:
-  allow_implicit_invocation: false
-```
-Set `allow_implicit_invocation: true` only for reference skills (auto-applicable).
-
-**`install.sh`** — installs to all agent paths:
-```bash
-#!/bin/bash
-set -e
-SKILL="{SKILL_NAME}"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SKILL_SRC="$SCRIPT_DIR/skills/$SKILL"
-
-install_to() {
-  local dest="${1}/$SKILL"
-  mkdir -p "$dest"
-  cp -r "$SKILL_SRC/." "$dest/"
-  echo "  ✓ $dest"
-}
-
-echo "Installing $SKILL skill..."
-install_to "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills"          # Claude Code
-install_to "$HOME/.agents/skills"                                # Codex, Amp, Goose
-install_to "${XDG_CONFIG_HOME:-$HOME/.config}/opencode/skills"   # opencode
-install_to "$HOME/.gemini/antigravity/skills"                    # Gemini CLI
-install_to "$HOME/.openclaw/workspace/skills"                    # OpenClaw
-
-echo ""
-echo "Done. Invoke with: /{SKILL_NAME}"
-echo "Reinstall anytime: bash install.sh"
-```
-
-**`AGENTS.md`** and **`GEMINI.md`**: `@./skills/{SKILL_NAME}/SKILL.md`
-
-**`gemini-extension.json`**:
-```json
-{"name":"{SKILL_NAME}","description":"{desc}","version":"1.0.0","contextFileName":"GEMINI.md"}
-```
-
-**`.gitignore`**:
-```
-__pycache__/
-*.pyc
-.venv/
-.env
-.env.local
-**/.DS_Store
-node_modules/
-```
-
-**Agent rule files** (Cursor, Windsurf, Cline, Copilot) — see `references/agent-rules.md`.
-Each file: invocation syntax + phase list (one line each) + critical constraints. Max 30 lines.
-
-**`README.md`** — must include:
-- What it does (1-2 sentences + example output tree)
-- Install section with `bash install.sh` + per-agent manual paths
-- Usage table (args + defaults)
-- Requirements (any external tools)
-- Feature table
-- How it works (phase pipeline)
-- Agent support table
-- Contributing link
-
-**`CLAUDE.md`** — contributor guide:
-- What this repo is
-- Source of truth files (edit only `skills/`)
-- Agent-specific files (synced, don't edit directly)
-- Key constraints
-- How to make changes
+Generate full repo in `{SKILL_NAME}/` directory. See `references/scaffold-templates.md` for complete file list and content templates.
 
 ---
 
-## Phase 6 — Report
+## Phase 8 — Report
 
 ```markdown
 ## Skill Built: {SKILL_NAME}
 
-**Type**: {skill-type}
+**Type**: {SKILL_TYPE}
 **Hooks**: {yes — SessionStart + UserPromptSubmit | no}
 **References**: {list filenames or "none"}
 **Repo scaffold**: {yes — {SKILL_NAME}/ | no}
@@ -414,22 +210,11 @@ Each file: invocation syntax + phase list (one line each) + critical constraints
 ### Files created
 {list every file path}
 
-### Install now
-```bash
-# Claude Code & opencode
-mkdir -p ~/.claude/skills/{SKILL_NAME} && cp -r skills/{SKILL_NAME}/. ~/.claude/skills/{SKILL_NAME}/
-
-# Codex
-mkdir -p ~/.agents/skills/{SKILL_NAME} && cp -r skills/{SKILL_NAME}/. ~/.agents/skills/{SKILL_NAME}/
-
-# All agents at once (from repo root)
+### Install
 bash install.sh
-```
 
 ### Test
-```
 /{SKILL_NAME} {example invocation}
-```
 ```
 
 ---
@@ -438,71 +223,34 @@ bash install.sh
 
 Load `references/skill-anatomy.md`.
 
-**Step 1 — Read the target skill**
+**Step 1 — Read target.** Read SKILL.md at `--audit` path. If missing, stop and tell user.
 
-Read the SKILL.md at the path provided with `--audit`. If path doesn't exist, stop and tell the user.
+**Step 2 — Extract metadata.** Parse frontmatter: `name`, `description`, `license`, type (infer from body). Estimate token count.
 
-**Step 2 — Extract metadata**
-
-Parse frontmatter. Capture:
-- `name`, `description`, `license`, `type` (infer from body if not in frontmatter)
-- All present fields vs. expected fields for this skill type
-- `SKILL_SIZE` — estimate token count of full file
-
-**Step 3 — Run quality checklist**
-
-Check every item in `references/skill-anatomy.md` Quality Checklist. For each failure, record:
+**Step 3 — Run quality checklist.** Check every item in `references/skill-anatomy.md` Quality Checklist. Record each failure:
 ```
 [FAIL] {checklist-item}
-  Found:    {what's actually there}
-  Expected: {what should be there}
-  Fix:      {exact change needed}
+  Found:    {what's there}
+  Expected: {what should be}
+  Fix:      {exact change}
 ```
 
-Also run these structural checks:
-- Does body structure match required sections for detected skill type?
-- Are all `{VARIABLE}` placeholders substituted?
-- Are reference files one-level-deep only?
-- Does SKILL.md stay under 5000 tokens?
-- Do reference files >100 lines have a TOC?
-- Are domain facts in references from verified sources or potentially guessed?
+Also check: body matches required sections for type, no raw `{VARIABLE}` placeholders, SKILL.md under 5000 tokens, reference files have TOC if >100 lines, domain facts verified not guessed.
 
-**Step 4 — Produce audit report**
+**Step 4 — Report.** Output: type detected, size (ok or OVER BUDGET), failures list, warnings list, passed count.
 
-```markdown
-## Audit: {skill-name}
-
-**Type detected**: {type}
-**Size**: ~{N} tokens ({ok | OVER BUDGET — move content to references/})
-**Issues found**: {N}
-
-### Failures
-{list of [FAIL] entries}
-
-### Warnings
-{list of non-blocking issues worth fixing}
-
-### Passed
-{count} checks passed.
-```
-
-**Step 5 — If --fix flag present**
-
-Output corrected SKILL.md with all failures resolved. Show a diff summary of what changed.
-Do not rewrite sections that passed — only fix what failed.
-If domain research is needed to fix reference content, run Phase 1.5 first.
+**Step 5 — If --fix.** Output corrected SKILL.md — fix failures only, don't rewrite passing sections. Run Phase 3 first if domain research needed.
 
 ---
 
 ## Token Efficiency Rules
 
-- Ask 3 questions max total (Phase 0 + Phase 1 combined)
-- Load `skill-types.md` once at Phase 0, keep active
-- Load `agent-rules.md` only if NEEDS_HOOKS or `--repo` flag
-- Load `install-paths.md` only during Phase 5
-- Run Phase 1.5 domain research only if NEEDS_REFERENCES is true
+- Ask 3 questions max total (Phase 1 + Phase 2)
+- Load `skill-types.md` once at Phase 1, keep active
+- Load `hook-templates.md` only at Phase 6
+- Load `scaffold-templates.md`, `agent-rules.md`, `install-paths.md` only at Phase 7
+- Run Phase 3 domain research only if NEEDS_REFERENCES
 - Generate all files in one pass — no file-by-file back-and-forth
-- Decide ambiguous choices; note them in report
 
 ---
 
@@ -510,8 +258,8 @@ If domain research is needed to fix reference content, run Phase 1.5 first.
 
 - Substitute ALL `{TEMPLATE_VARIABLES}` — never output raw placeholders
 - Every generated SKILL.md self-contained — no dangling `@` includes in skill body
-- JSON files: valid JSON, no comments, no trailing commas
-- YAML: valid YAML, correct indentation, quote strings with special chars
-- Hook JS: use safeWriteFlag pattern verbatim — don't improvise filesystem writes
-- `name` field must match `^[a-z0-9]+(-[a-z0-9]+)*$` — validate before writing
+- JSON: valid, no comments, no trailing commas
+- YAML: valid, correct indentation, quote special chars
+- Hook JS: use safeWriteFlag pattern verbatim
+- `name` must match `^[a-z0-9]+(-[a-z0-9]+)*$` — validate before writing
 - `description` must be ≤1024 chars — count before writing

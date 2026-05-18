@@ -5,6 +5,22 @@ Complete spec for writing a correct SKILL.md. Based on the Agent Skills open sta
 
 ---
 
+## Table of Contents
+
+- [Progressive Disclosure Model](#progressive-disclosure-model)
+- [Universal Frontmatter](#universal-frontmatter-all-agents)
+- [Claude Code / opencode Extended Frontmatter](#claude-code--opencode-extended-frontmatter)
+- [Codex only](#codex-only-in-agentsopenaiiyaml-not-in-skillmd)
+- [name Validation](#name-validation)
+- [description Writing](#description-writing)
+- [Body Structure Principles](#body-structure-principles)
+- [Optional Directories](#optional-directories)
+- [Quality Checklist](#quality-checklist)
+- [Common Mistakes](#common-mistakes)
+- [Examples: Before/After](#examples-beforeafter)
+
+---
+
 ## Progressive Disclosure Model
 
 Agents load skills in 3 stages. Design for this:
@@ -253,3 +269,70 @@ skills/{name}/
 | References load other references | Flatten — one level only |
 | Domain facts guessed, not verified | WebSearch official docs before writing refs |
 | Missing `argument-hint` on skills with args | Add it — improves autocomplete UX |
+
+---
+
+## Examples: Before/After
+
+### Bad frontmatter → Good frontmatter
+
+**Before** (5 issues):
+```yaml
+---
+name: My_Image_Tool
+description: This skill helps you with compressing images in your project using various tools and methods to reduce file sizes efficiently and effectively across multiple formats.
+user-invocable: true
+---
+```
+
+**After** (all fixed):
+```yaml
+---
+name: image-compressor
+description: >
+  Compress images before git commits to reduce repo size.
+  Invoke: /image-compressor [--quality 80] [--format webp|avif]
+  Outputs optimized images in-place, reports bytes saved.
+license: MIT
+user-invocable: true
+argument-hint: '[--quality 80] [--format webp|avif|original]'
+when_to_use: >
+  Use when user says compress images, optimize images, reduce image size.
+metadata:
+  author: "your-name"
+  category: "developer-tools"
+---
+```
+
+Issues fixed: `name` had uppercase + underscore, `description` started with "This skill...", missing `license`, missing `argument-hint`, missing `when_to_use`.
+
+### Bad body opening → Good body opening
+
+**Before**: "This skill provides image compression capabilities for your development workflow."
+**After**: "Compress staged images before each commit. Supports PNG, JPEG, WebP, and AVIF."
+
+### Bad reference loading → Good reference loading
+
+**Before** (all refs loaded upfront):
+```markdown
+Load `references/compression-api.md`.
+Load `references/format-support.md`.
+Load `references/error-codes.md`.
+
+## Phase 0 — Parse Args
+...
+```
+
+**After** (lazy, per-phase):
+```markdown
+## Phase 0 — Parse Args
+...
+
+## Phase 1 — Compress
+Load `references/compression-api.md` before processing images.
+...
+
+## Phase 2 — Report
+Load `references/format-support.md` for format comparison table.
+...
+```

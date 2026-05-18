@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'skill-builder available. /skill-builder \"description\" [--type workflow|mode|tool|reference|agent] [--repo]. Phases: classify → gather → SKILL.md → references → hooks → scaffold → report. name must be ^[a-z0-9]+(-[a-z0-9]+)*$. description max 1024 chars. See skills/skill-builder/SKILL.md.'",
+            "command": "echo 'skill-builder available. /skill-builder \"description\" [--type workflow|mode|tool|reference|agent] [--repo] [--audit path] [--fix]. Phases: route → classify → gather → research → SKILL.md → references → hooks → scaffold → report. See skills/skill-builder/SKILL.md.'",
             "timeout": 5,
             "statusMessage": "Loading skill-builder..."
           }

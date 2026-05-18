@@ -147,19 +147,18 @@ cp -r skills/skill-builder/. ~/.gemini/antigravity/skills/skill-builder/
 
 ## How it works
 
-### Create path (8 phases)
+### Create path (9 phases)
 
 ```
-Phase 0:   Route — detect --audit flag; branch to audit path if present
-Phase 1:   Classify skill type (auto or from --type flag)
-Phase 2:   Gather requirements (≤3 questions total)
-Phase 1.5: Domain research — WebSearch official docs for every tool/API
-           the skill references; verified facts only, no guessing
-Phase 3:   Generate SKILL.md (correct frontmatter + body for type)
-Phase 4:   Generate references/ (populated from research, lazily loaded)
-Phase 5:   Generate hooks/ (mode skills only — SessionStart + UserPromptSubmit)
-Phase 6:   Scaffold full repo (--repo flag only)
-Phase 7:   Report + install commands
+Phase 0: Route — detect --audit flag; branch to audit path if present
+Phase 1: Classify skill type (auto or from --type flag)
+Phase 2: Gather requirements (≤3 questions total)
+Phase 3: Domain research — WebSearch official docs for tools/APIs (skip if no refs needed)
+Phase 4: Generate SKILL.md (correct frontmatter + body for type)
+Phase 5: Generate references/ (populated from research, lazily loaded)
+Phase 6: Generate hooks/ (mode skills only — SessionStart + UserPromptSubmit)
+Phase 7: Scaffold full repo (--repo flag only)
+Phase 8: Report + install commands
 ```
 
 ### Audit path (Phase A)
@@ -177,8 +176,9 @@ Step 4: If --fix — output corrected SKILL.md (failures only, passing sections 
 - Full Claude Code / opencode extended fields: `user-invocable`, `disable-model-invocation`, `argument-hint`, `when_to_use`, `model`, `effort`, `context`, `agent`, `paths`, `shell`, `hooks`
 - Codex `agents/openai.yaml` format
 - All 5 agent discovery paths + `install.sh` template
-- Hook patterns for mode skills (safeWriteFlag, silent-fail, per-turn reinforcement)
-- All agent rule file formats (Cursor `.mdc`, Windsurf `.md`, Cline, Codex, Copilot)
+- Hook patterns for mode skills (safeWriteFlag, silent-fail, per-turn reinforcement) — see `references/hook-templates.md`
+- Full repo scaffold templates — see `references/scaffold-templates.md`
+- All agent rule file formats (Cursor `.mdc`, Windsurf `.md`, Cline, Codex, Copilot) — see `references/agent-rules.md`
 - Progressive disclosure model: SKILL.md ≤5000 tokens, references on-demand, TOC for large files
 
 ---

@@ -2,10 +2,11 @@
 set -e
 
 SKILL="skill-builder"
-SKILL_SRC="$(cd "$(dirname "$0")/skills/$SKILL" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILL_SRC="$SCRIPT_DIR/skills/$SKILL"
 
 install_to() {
-  local dest="$1/$SKILL"
+  local dest="${1}/$SKILL"
   mkdir -p "$dest"
   cp -r "$SKILL_SRC/." "$dest/"
   echo "  ✓ $dest"

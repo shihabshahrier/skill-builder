@@ -57,12 +57,6 @@ Key constraints from spec:
 
 ---
 
-## ManimGL version (for test-manim reference)
-
-manimgl 1.7.2 installed at `/Library/Frameworks/Python.framework/Versions/3.11/bin/manimgl`.
-
----
-
 ## Making changes
 
 1. Edit source file

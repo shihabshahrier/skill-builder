@@ -7,28 +7,25 @@ When user says `/skill-builder`, follow `skills/skill-builder/SKILL.md`.
 
 **Invocation**: `/skill-builder "description" [--type workflow|mode|tool|reference|agent] [--repo] [--audit path] [--fix]`
 
-**Phases (create path)**:
-1. Route: detect --audit flag; if present jump to Phase A
-2. Classify skill type (auto-detect or --type flag)
-3. Gather requirements (≤3 questions total)
-4. Domain research: WebSearch official docs for each tool/API the skill references (skip if no references needed)
-5. Generate SKILL.md (frontmatter + body for type)
-6. Generate references/ (verified facts only — no guessing)
-7. Generate hooks/ (mode skills only)
-8. Scaffold full repo (--repo flag only)
-9. Report + install commands
+**Phases (create)**:
+0. Route — detect --audit; if present jump to Phase A
+1. Classify skill type (auto-detect or --type)
+2. Gather requirements (≤3 questions total)
+3. Domain research — WebSearch official docs (skip if no references needed)
+4. Generate SKILL.md (frontmatter + body for type)
+5. Generate references/ (verified facts only)
+6. Generate hooks/ (mode skills only)
+7. Scaffold full repo (--repo only)
+8. Report + install commands
 
-**Phase A (--audit path)**:
-1. Read SKILL.md at given path
-2. Run full quality checklist from `references/skill-anatomy.md`
-3. Output audit report: failures / warnings / passed count
-4. If --fix: output corrected SKILL.md (fix failures only, don't rewrite passing sections)
+**Phase A (--audit)**:
+1. Read SKILL.md at path
+2. Run quality checklist from `references/skill-anatomy.md`
+3. Output audit report: failures / warnings / passed
+4. If --fix: output corrected SKILL.md (fix failures only)
 
 **Critical**:
-- `name` must match `^[a-z0-9]+(-[a-z0-9]+)*$`, max 64 chars
-- `description` max 1024 chars; SKILL.md body max 5000 tokens
-- Claude Code extended fields: `argument-hint`, `when_to_use`, `model`, `effort`, `context`, `agent`, `paths`
-- Never output raw `{TEMPLATE_VARIABLES}` in generated files
-- Domain facts in references must come from WebSearch of official docs — never guessed
-- Reference files >100 lines need TOC at top; one-level-deep only (no chained includes)
-- Load `references/skill-types.md` at Phase 0; `references/agent-rules.md` at Phase 7 only
+- `name`: `^[a-z0-9]+(-[a-z0-9]+)*$`, max 64 chars
+- `description`: max 1024 chars; SKILL.md body: max 5000 tokens
+- Domain facts in references: WebSearch official docs — never guess
+- Reference files >100 lines: TOC at top; one-level-deep only
