@@ -1,195 +1,210 @@
-# skill-builder
+# 🛠️ skill-builder
 
-Build any AI agent skill from a plain-English description. One command, production-ready output.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Agent Skills Open Standard](https://img.shields.io/badge/Agent_Skills-Open_Standard-orange.svg)](https://agentskills.io)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-Works with every agent that supports the [Agent Skills open standard](https://agentskills.io) —
-Claude Code, Codex, opencode, Cursor, Windsurf, Gemini CLI, OpenClaw, Cline, Copilot, and 20+ more.
+Build any custom AI agent skill, prompt, or tool from a plain-English description. **One command, production-ready output.**
+
+`skill-builder` is fully compatible with the **[Agent Skills open standard](https://agentskills.io)**, supporting major AI coding assistants and CLI agents: **Claude Code, Cursor, Cline, Windsurf, Copilot, Gemini CLI, Codex, opencode**, and 20+ others.
 
 ---
 
-## What it does
+## ⚡ What it does
 
-```
+Instead of manually writing complex prompts, metadata, and hook templates for different agents, simply run:
+
+```bash
 /skill-builder "compress images before committing"
 ```
 
-→ Generates:
-
-```
+🎯 **Generates a fully scaffolded, production-ready repository:**
+```text
 image-compressor/
-  skills/
-    image-compressor/
-      SKILL.md              ← complete, correct frontmatter + body
-      references/
-        compression-api.md  ← domain knowledge, lazily loaded
-  install.sh                ← installs to all 5 agent paths
-  README.md
-  LICENSE
-  ...
+├── skills/
+│   └── image-compressor/
+│       ├── SKILL.md              ← Complete, validated frontmatter & body
+│       └── references/
+│           └── compression-api.md ← Rich domain knowledge, loaded lazily
+├── install.sh                    ← Installs instantly to all 5 standard agent paths
+├── README.md                     ← Auto-generated, clear documentation
+└── LICENSE                       ← Standard open-source license
 ```
 
-The skill works immediately after running `bash install.sh`. No config changes needed.
+> [!TIP]
+> The generated skill is immediately operational right after running `bash install.sh`. No manual configuration is required.
 
 ---
 
-## Install
+## 📦 Installation
 
-### Claude Code
+`skill-builder` runs natively inside your agent's environment. You can install it automatically or copy files manually.
 
+### 1. Claude Code
+Install as a plugin directly:
 ```bash
 claude plugin install shihabshahrier/skill-builder
 ```
 
-### All other agents (opencode, Codex, Gemini CLI, OpenClaw, Cursor, Windsurf, Cline)
-
+### 2. Multi-Agent Setup (opencode, Cursor, Windsurf, Cline, Codex, Gemini, OpenClaw)
+Clone the repository and run the unified installer to copy the skill to all agent config paths automatically:
 ```bash
-git clone https://github.com/shihabshahrier/skill-builder
+git clone https://github.com/shihabshahrier/skill-builder.git
 cd skill-builder
 bash install.sh
 ```
 
-`install.sh` copies the skill to all 5 agent discovery paths automatically.
+### 3. Manual Installation (Specific Agents)
+If you prefer manual placement, copy the skill directory to the corresponding discovery path:
 
-### Manual (one agent)
+*   **Claude Code:**
+    ```bash
+    mkdir -p ~/.claude/skills/skill-builder
+    cp -r skills/skill-builder/. ~/.claude/skills/skill-builder/
+    ```
+*   **OpenAI Codex:**
+    ```bash
+    mkdir -p ~/.agents/skills/skill-builder
+    cp -r skills/skill-builder/. ~/.agents/skills/skill-builder/
+    ```
+*   **Gemini CLI:**
+    ```bash
+    mkdir -p ~/.gemini/antigravity/skills/skill-builder
+    cp -r skills/skill-builder/. ~/.gemini/antigravity/skills/skill-builder/
+    ```
 
+### 🔍 Verification
+Verify your installation inside your agent shell:
 ```bash
-# Claude Code
-mkdir -p ~/.claude/skills/skill-builder
-cp -r skills/skill-builder/. ~/.claude/skills/skill-builder/
-
-# Codex
-mkdir -p ~/.agents/skills/skill-builder
-cp -r skills/skill-builder/. ~/.agents/skills/skill-builder/
-
-# Gemini CLI
-mkdir -p ~/.gemini/antigravity/skills/skill-builder
-cp -r skills/skill-builder/. ~/.gemini/antigravity/skills/skill-builder/
-```
-
-### Verify
-
-```bash
-# Claude Code — skill appears in listing
+# Inside Claude Code — ensures skill appears in the /help listing
 /help
 
-# Any agent — invoke directly
-/skill-builder "what does this skill do"
+# Any Agent — run the command directly
+/skill-builder "What does this skill do?"
 ```
 
 ---
 
-## Usage
+## 🚀 Usage Guide
 
-### Build a new skill
+### 🛠️ Build a New Skill
+Generate structured skills, tools, workflows, or roles using plain-English prompts.
 
+```bash
+# Simple auto-detected generation
+/skill-builder "scaffold a fastapi project"
+
+# Force a specific skill type
+/skill-builder "remind the model to write unit tests first" --type reference
+
+# Generate a complete marketplace-ready repository scaffold
+/skill-builder "make the model speak formally" --type mode --repo
 ```
-/skill-builder "description"
-/skill-builder "description" --type workflow|mode|tool|reference|agent
-/skill-builder "description" --type workflow --repo
-```
 
-### Audit an existing skill
+### 🔎 Audit & Repair Existing Skills
+Ensure your existing skills adhere to best practices and spec compliance.
 
-```
+```bash
+# Run the quality checklist against an existing skill
 /skill-builder --audit skills/my-skill/SKILL.md
+
+# Audit and automatically correct any non-compliant sections
 /skill-builder --audit skills/my-skill/SKILL.md --fix
 ```
 
-`--audit` runs the full quality checklist against any SKILL.md — checks frontmatter spec compliance, body structure, size budget, reference quality, placeholder substitution, and more. Reports every failure with exact fix instructions.
+---
 
-`--fix` goes further: outputs a corrected SKILL.md with all failures resolved. Sections that pass are left untouched.
+## ⚙️ CLI Flags Reference
 
-### All flags
-
-| Arg | Default | Values |
-|-----|---------|--------|
-| description | required (unless --audit) | plain English, what the skill does |
-| --type | auto-detected | workflow, mode, tool, reference, agent |
-| --repo | off | scaffold full marketplace-ready repo |
-| --audit | off | path to existing SKILL.md to audit |
-| --fix | off | with --audit: also output corrected SKILL.md |
-
-**Without `--repo`**: generates `skills/{name}/SKILL.md` + references only.
-**With `--repo`**: generates a complete publish-ready repo with all agent rules, install script, README, LICENSE, CI boilerplate.
+| Flag | Default | Allowed Values | Description |
+|:---|:---|:---|:---|
+| **`description`** | *Required* | Plain-English string | High-level goal of what the skill/prompts/tools should do. *(Omit only when using `--audit`)* |
+| **`--type`** | `auto` | `workflow`, `mode`, `tool`, `reference`, `agent` | Forces a specific classification (overrides automatic smart detection). |
+| **`--repo`** | `false` | None | Scaffolds a full publish-ready repo directory containing the skill, README, LICENSE, agent rules, and install script. |
+| **`--audit`** | `none` | Path to a `SKILL.md` | Inspects and audits the target file for compliance, performance, structure, and token budgets. |
+| **`--fix`** | `false` | None | Works alongside `--audit`. Re-writes the file with fixes while leaving compliant sections untouched. |
 
 ---
 
-## Skill types
+## 🧩 Supported Skill Types
 
-| Type | When to use | Example |
-|------|-------------|---------|
-| **workflow** | Multi-step pipeline producing artifacts | `"scaffold a FastAPI project"` |
-| **mode** | Persistent behavior change every response | `"always respond formally"` |
-| **tool** | One-shot action on a target | `"compress CSS before commit"` |
-| **reference** | Domain knowledge that guides behavior | `"know our API conventions"` |
-| **agent** | Autonomous multi-role persona | `"act as a full-stack dev firm"` |
+`skill-builder` understands the nuances of various interactive paradigms:
 
----
-
-## Supported agents
-
-| Agent | Discovery path |
-|-------|---------------|
-| Claude Code | `~/.claude/skills/` |
-| OpenAI Codex | `~/.agents/skills/` |
-| opencode (SST) | `~/.config/opencode/skills/` + `~/.claude/skills/` + `~/.agents/skills/` |
-| Gemini CLI | `~/.gemini/antigravity/skills/` |
-| OpenClaw | `~/.openclaw/workspace/skills/` |
-| Cursor | `.cursor/rules/` (condensed rule file) |
-| Windsurf | `.windsurf/rules/` (condensed rule file) |
-| Cline | `.clinerules/` (condensed rule file) |
-| GitHub Copilot | `.github/copilot-instructions.md` |
-| Any AGENTS.md agent | `AGENTS.md` include |
-
-`install.sh` handles the top 5 automatically. The bottom 5 use in-repo rule files (included in `--repo` scaffold).
+| Category | Description | Example Prompt |
+|:---|:---|:---|
+| **`workflow`** | Multi-step pipelined execution that outputs artifacts | *"Scaffold a clean FastAPI + Tailwind project"* |
+| **`mode`** | Persistent behavioral instructions active on every turn | *"Always output code using strictly functional programming"* |
+| **`tool`** | One-shot atomic transformation on target files/data | *"Compress CSS files and format code before committing"* |
+| **`reference`** | Static, specialized domain knowledge loaded on demand | *"Include our internal API conventions and schemas"* |
+| **`agent`** | A highly autonomous persona operating as a multi-role team | *"Act as a senior DevOps firm deploying to AWS"* |
 
 ---
 
-## How it works
+## 🤖 Supported Agents & Ecosystem
 
-### Create path (9 phases)
+The generated skill bundles are compatible with the industry's leading AI environments:
 
+| Agent / Environment | Discovery Path |
+|:---|:---|
+| **Claude Code** | `~/.claude/skills/` |
+| **OpenAI Codex** | `~/.agents/skills/` |
+| **opencode (SST)** | `~/.config/opencode/skills/` (and standard fallbacks) |
+| **Gemini CLI** | `~/.gemini/antigravity/skills/` |
+| **OpenClaw** | `~/.openclaw/workspace/skills/` |
+| **Cursor** | `.cursor/rules/` (condensed `.mdc` file formats) |
+| **Windsurf** | `.windsurf/rules/` (system rules) |
+| **Cline** | `.clinerules/` (custom instruction instructions) |
+| **GitHub Copilot** | `.github/copilot-instructions.md` |
+| **Generic Agents** | `AGENTS.md` (root directory includes) |
+
+---
+
+## 🧠 Architectural Workflow
+
+`skill-builder` goes through a highly efficient, multi-phase compilation pipeline:
+
+```text
+  [ Plain-English Input ]
+             │
+             ▼
+     0. Route CLI Flags  ─────────►  [ --audit ]  ──► Phase A: Parse & Verify Target
+             │                                               │ (Fix & Output if requested)
+     1. Classify Type (Smart NLP)                            ▼
+             │                                       [ Quality Report ]
+     2. Gather Parameters (≤3 Qs)
+             │
+     3. Domain Research (Auto Web-search & extraction)
+             │
+     4. Generate SKILL.md (Strict standard validation)
+             │
+     5. Generate Domain References (Lazy-loaded tables & docs)
+             │
+     6. Generate Execution Hooks (Safe system-level JS handlers)
+             │
+     7. Scaffolding (Create repo structure if --repo is enabled)
+             │
+             ▼
+      [ Done! Install & Test ]
 ```
-Phase 0: Route — detect --audit flag; branch to audit path if present
-Phase 1: Classify skill type (auto or from --type flag)
-Phase 2: Gather requirements (≤3 questions total)
-Phase 3: Domain research — WebSearch official docs for tools/APIs (skip if no refs needed)
-Phase 4: Generate SKILL.md (correct frontmatter + body for type)
-Phase 5: Generate references/ (populated from research, lazily loaded)
-Phase 6: Generate hooks/ (mode skills only — SessionStart + UserPromptSubmit)
-Phase 7: Scaffold full repo (--repo flag only)
-Phase 8: Report + install commands
-```
-
-### Audit path (Phase A)
-
-```
-Step 1: Read SKILL.md at given path
-Step 2: Run full quality checklist (spec, body, references, size budget)
-Step 3: Output audit report — [FAIL] / [WARN] / passed count
-Step 4: If --fix — output corrected SKILL.md (failures only, passing sections unchanged)
-```
-
-### Knows
-
-- All Agent Skills open standard frontmatter: `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`
-- Full Claude Code / opencode extended fields: `user-invocable`, `disable-model-invocation`, `argument-hint`, `when_to_use`, `model`, `effort`, `context`, `agent`, `paths`, `shell`, `hooks`
-- Codex `agents/openai.yaml` format
-- All 5 agent discovery paths + `install.sh` template
-- Hook patterns for mode skills (safeWriteFlag, silent-fail, per-turn reinforcement) — see `references/hook-templates.md`
-- Full repo scaffold templates — see `references/scaffold-templates.md`
-- All agent rule file formats (Cursor `.mdc`, Windsurf `.md`, Cline, Codex, Copilot) — see `references/agent-rules.md`
-- Progressive disclosure model: SKILL.md ≤5000 tokens, references on-demand, TOC for large files
 
 ---
 
-## Requirements
+## 🛠️ Requirements
 
-None. Pure markdown + bash. No build step, no runtime, no package manager.
+- **None!** `skill-builder` relies purely on standard markdown templates, shell scripts, and native agent capabilities.
+- No bulky runtimes, no dependencies to build, and no external package manager overhead.
 
 ---
 
-## Contributing
+## 🤝 Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
-Edit only `skills/skill-builder/SKILL.md` and `skills/skill-builder/references/*.md`.
+Contributions are highly welcome! To contribute:
+1. Review the [CONTRIBUTING.md](CONTRIBUTING.md) guidelines.
+2. Direct your changes exclusively to the skill source: `skills/skill-builder/SKILL.md` and `skills/skill-builder/references/*.md`.
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+
