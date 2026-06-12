@@ -208,3 +208,6 @@ Contributions are highly welcome! To contribute:
 
 This project is licensed under the [MIT License](LICENSE).
 
+---
+
+📖 **Project page:** https://shihub.online/projects/skill-builder
